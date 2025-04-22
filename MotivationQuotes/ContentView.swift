@@ -7,40 +7,90 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    //List of quotes
-    let quotes: [String] = [
-        "The only way to do great work is to love what you do.",
-        "Your time is limited, don't waste it living someone else's life.",
-        "The future belongs to those who believe in the power of imagination.",
-        "Your potential is unlimited. There is nothing that can stop you from achieving your dreams.",
-        ]
-    
-    //Current quote state
-    @State private var currentQuote = "Tap the button for a motivational quote!"
-    
-    var body: some View {
-        VStack(spacing:30) {
-            Text(currentQuote)
-                .font(.title)
-                .multilineTextAlignment(.center)
-                .padding()
-            
-            Button(action: {
-                currentQuote=quotes.randomElement() ?? "No quotes found!"
-            }) {
-                Text("New Quote")
-                    .font(.headline)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-        }
-        .padding()
-    }
+struct Quote: Codable, Identifiable, Equatable {
+    var id: String { q + a }  // unique ID from quote + author
+    let q: String             // quote text
+    let a: String             // author
 }
 
-#Preview {
-    ContentView()
+struct ContentView: View {
+    @State private var currentQuote: Quote?
+    @State private var favorites: [Quote] = []
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 30) {
+                if let quote = currentQuote {
+                    VStack(spacing: 10) {
+                        Text("\"\(quote.q)\"")
+                            .font(.title2)
+                            .multilineTextAlignment(.center)
+                            .padding()
+
+                        Text("- \(quote.a)")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                } else {
+                    Text("Tap the button to get a motivational quote!")
+                        .multilineTextAlignment(.center)
+                        .padding()
+                }
+
+                Button(action: {
+                    fetchQuote()
+                }) {
+                    Text("New Quote")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+
+                if let quote = currentQuote {
+                    Button(action: {
+                        if !favorites.contains(quote) {
+                            favorites.append(quote)
+                        }
+                    }) {
+                        Text("❤️ Save to Favorites")
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                }
+
+                NavigationLink("View Favorites", destination: FavoritesView(favorites: favorites))
+                    .padding(.top, 30)
+
+                Spacer()
+            }
+            .padding()
+            .navigationTitle("Motivation App")
+            .onAppear {
+                fetchQuote()
+            }
+        }
+    }
+
+    func fetchQuote() {
+        guard let url = URL(string: "https://zenquotes.io/api/random") else { return }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let data = data {
+                if let decoded = try? JSONDecoder().decode([Quote].self, from: data),
+                   let firstQuote = decoded.first {
+                    DispatchQueue.main.async {
+                        currentQuote = firstQuote
+                    }
+                }
+            } else if let error = error {
+                print("Error fetching quote: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
 }
