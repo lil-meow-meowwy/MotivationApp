@@ -19,6 +19,7 @@ struct Quote: Codable, Identifiable, Equatable {
 struct ContentView: View {
     @State private var currentQuote: Quote?
     @State private var favorites: [Quote] = []
+    @State private var showShareSheet=false
 
     let favoritesKey="savedQuotes"
     
@@ -90,12 +91,29 @@ struct ContentView: View {
                         .padding(.top, 30)
                     
                     Spacer()
+                    
+                    if currentQuote != nil {
+                        Button("Share"){
+                            showShareSheet = true
+                        }
+                        .padding()
+                        .background(Color.green)
+                        .foregroundColor(Color(.systemBackground))
+                        .cornerRadius(10)
+                    }
                 }
                 .padding()
                 .navigationTitle("Motivation App")
                 .onAppear {
                     fetchQuotes()
                     loadFavorites()
+                }
+            }
+            
+            .sheet(isPresented: $showShareSheet) {
+                if let quote = currentQuote {
+                    let quoteText = "\"\(quote.text)\" — \(quote.author ?? "Unknown")"
+                    ActivityView(activityItems: [quoteText])
                 }
             }
         }
