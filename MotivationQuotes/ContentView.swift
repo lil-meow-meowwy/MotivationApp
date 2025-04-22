@@ -20,6 +20,9 @@ struct ContentView: View {
     @State private var currentQuote: Quote?
     @State private var favorites: [Quote] = []
     @State private var showShareSheet=false
+    
+    @AppStorage("fontSize") var fontSize: Double = 18
+    @AppStorage("fontName") var fontName: String = "System"
 
     let favoritesKey="savedQuotes"
     
@@ -45,7 +48,7 @@ struct ContentView: View {
                     if let quote = currentQuote {
                         VStack(spacing: 10) {
                             Text("\"\(quote.q)\"")
-                                .font(.title2)
+                                .font(fontName == "System" ? .system(size: fontSize) : .custom(fontName, size: fontSize))
                                 .multilineTextAlignment(.center)
                                 .padding()
                             
@@ -90,6 +93,8 @@ struct ContentView: View {
                     NavigationLink("View Favorites", destination: FavoritesView(favorites: favorites))
                         .padding(.top, 30)
                     
+                    NavigationLink("Settings", destination: SettingsView())
+
                     Spacer()
                     
                     if currentQuote != nil {
