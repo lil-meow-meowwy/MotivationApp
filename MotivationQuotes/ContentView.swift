@@ -94,6 +94,9 @@ struct ContentView: View {
                         .padding(.top, 30)
                     
                     NavigationLink("Settings", destination: SettingsView())
+                    
+                    NavigationLink("Notifications", destination: NotificationSettingsView())
+
 
                     Spacer()
                     
