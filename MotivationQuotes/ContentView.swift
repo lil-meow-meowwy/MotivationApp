@@ -8,9 +8,12 @@
 import SwiftUI
 
 struct Quote: Codable, Identifiable, Equatable {
-    var id: String { q + a }  // unique ID from quote + author
-    let q: String             // quote text
-    let a: String             // author
+    var id: String { q + a }  // Unique ID
+    let q: String             // Quote text
+    let a: String             // Author
+
+    var text: String { q }
+    var author: String { a }
 }
 
 struct ContentView: View {
@@ -26,9 +29,9 @@ struct ContentView: View {
     }
     
     func loadFavorites() {
-        if let savedData=UserDefaults.standard.data(forKey: favoritesKey) {
-            let decoded=try? JSONDecoder().decode([Quote].self, from: savedData){
-                favorites=decoded
+        if let savedData = UserDefaults.standard.data(forKey: favoritesKey) {
+            if let decoded = try? JSONDecoder().decode([Quote].self, from: savedData) {
+                favorites = decoded
             }
         }
     }
@@ -56,7 +59,7 @@ struct ContentView: View {
                     }
                     
                     Button(action: {
-                        fetchQuote()
+                        fetchQuotes()
                     }) {
                         Text("New Quote")
                             .font(.headline)
@@ -69,16 +72,12 @@ struct ContentView: View {
                     
                     if let quote = currentQuote {
                         Button(action: {
-                            if !favorites.contains(quote) {
+                            if !favorites.contains(where: { $0.text == quote.text }) {
                                 favorites.append(quote)
+                                saveFavorites()
                             }
                         }) {
-                            Text("❤️ Save to Favorites"){
-                                if !favorites.contains(where: {$0.text==quote.text}){
-                                    favorites.append(quote)
-                                    saveFavorites()
-                                }
-                            }
+                            Text("❤️ Save to Favorites")
                                 .padding()
                                 .frame(maxWidth: .infinity)
                                 .background(Color.red)
@@ -95,26 +94,29 @@ struct ContentView: View {
                 .padding()
                 .navigationTitle("Motivation App")
                 .onAppear {
-                    fetchQuote()
+                    fetchQuotes()
                     loadFavorites()
                 }
             }
         }
     }
     
-    func fetchQuote() {
+    func fetchQuotes() {
         guard let url = URL(string: "https://zenquotes.io/api/random") else { return }
 
         URLSession.shared.dataTask(with: url) { data, _, error in
             if let data = data {
-                if let decoded = try? JSONDecoder().decode([Quote].self, from: data),
-                   let firstQuote = decoded.first {
+                do {
+                    let decoded = try JSONDecoder().decode([Quote].self, from: data)
                     DispatchQueue.main.async {
-                        currentQuote = firstQuote
+                        // Only one quote returned at a time
+                        self.currentQuote = decoded.first
                     }
+                } catch {
+                    print("Decoding error:", error)
                 }
             } else if let error = error {
-                print("Error fetching quote: \(error.localizedDescription)")
+                print("Network error:", error)
             }
         }.resume()
     }
