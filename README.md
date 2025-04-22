@@ -68,6 +68,6 @@ MIT License. Use, remix, and spread the motivation.
 
 ## Contributions
 
-PRs are welcome! If you have ideas for features or improvements, feel free to open an issue or contribute.
+ If you have ideas for features or improvements, feel free to open an issue or contribute.
 
 ---
