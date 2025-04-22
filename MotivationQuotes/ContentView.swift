@@ -18,61 +18,64 @@ struct ContentView: View {
     @State private var favorites: [Quote] = []
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 30) {
-                if let quote = currentQuote {
-                    VStack(spacing: 10) {
-                        Text("\"\(quote.q)\"")
-                            .font(.title2)
+        ZStack {
+            Color(.systemBackground).ignoresSafeArea()
+            NavigationView {
+                VStack(spacing: 30) {
+                    if let quote = currentQuote {
+                        VStack(spacing: 10) {
+                            Text("\"\(quote.q)\"")
+                                .font(.title2)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            
+                            Text("- \(quote.a)")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                    } else {
+                        Text("Tap the button to get a motivational quote!")
                             .multilineTextAlignment(.center)
                             .padding()
-
-                        Text("- \(quote.a)")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
                     }
-                } else {
-                    Text("Tap the button to get a motivational quote!")
-                        .multilineTextAlignment(.center)
-                        .padding()
-                }
-
-                Button(action: {
-                    fetchQuote()
-                }) {
-                    Text("New Quote")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-
-                if let quote = currentQuote {
+                    
                     Button(action: {
-                        if !favorites.contains(quote) {
-                            favorites.append(quote)
-                        }
+                        fetchQuote()
                     }) {
-                        Text("❤️ Save to Favorites")
+                        Text("New Quote")
+                            .font(.headline)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.red)
-                            .foregroundColor(.white)
+                            .background(Color.accentColor)
+                            .foregroundColor(Color(.systemBackground))
                             .cornerRadius(10)
                     }
+                    
+                    if let quote = currentQuote {
+                        Button(action: {
+                            if !favorites.contains(quote) {
+                                favorites.append(quote)
+                            }
+                        }) {
+                            Text("❤️ Save to Favorites")
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.red)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
+                    }
+                    
+                    NavigationLink("View Favorites", destination: FavoritesView(favorites: favorites))
+                        .padding(.top, 30)
+                    
+                    Spacer()
                 }
-
-                NavigationLink("View Favorites", destination: FavoritesView(favorites: favorites))
-                    .padding(.top, 30)
-
-                Spacer()
-            }
-            .padding()
-            .navigationTitle("Motivation App")
-            .onAppear {
-                fetchQuote()
+                .padding()
+                .navigationTitle("Motivation App")
+                .onAppear {
+                    fetchQuote()
+                }
             }
         }
     }
